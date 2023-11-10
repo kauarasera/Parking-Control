@@ -1,11 +1,9 @@
 package com.api.parkingcontrol.services;
 
 import com.api.parkingcontrol.configs.ValidationException;
-import com.api.parkingcontrol.controllers.ParkingSpotController;
 import com.api.parkingcontrol.models.ParkingSpotModel;
 import com.api.parkingcontrol.repositories.ParkingSpotRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,9 +15,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class ParkingSpotService {
@@ -33,20 +28,6 @@ public class ParkingSpotService {
 
     @Transactional
     public ParkingSpotModel save(ParkingSpotModel parkingSpotModel) {
-
-        //Depois poderá ser essas responsabilidades isolado essas reponsabilidades em um custom validate
-        if (existsByLicensePlateCar(parkingSpotModel.getLicensePlateCar())) {
-            throw new ValidationException("Conflict: License Plate Car is already in use!");
-        }
-        if (existsByParkingSpotNumber(parkingSpotModel.getParkingSpotNumber())) {
-            throw new ValidationException("Conflict: Parking Spot is already in use!");
-        }
-
-        if (existsByRoomAndFloor(parkingSpotModel.getRoom(), parkingSpotModel.getFloor())) {
-            throw new ValidationException("Conflict: Parking Spot already registered for this room/floor!");
-        }
-
-        parkingSpotModel.setReservationDate(LocalDateTime.now(ZoneId.of("UTC")));
         return parkingSpotRepository.save(parkingSpotModel);
     }
 
@@ -64,22 +45,11 @@ public class ParkingSpotService {
     }
 
     public Page<ParkingSpotModel> findAll(Pageable pageable) {
-        Page<ParkingSpotModel> parkingSpotModelList =  parkingSpotRepository.findAll(pageable);
-        if (!parkingSpotModelList.isEmpty()) {
-            for (ParkingSpotModel spot : parkingSpotModelList) {
-                UUID id = spot.getId();
-                spot.add(linkTo(methodOn(ParkingSpotController.class).getOneParkingSpot(id)).withSelfRel());
-            }
-        }
         return parkingSpotRepository.findAll(pageable);
     }
 
     public Optional<ParkingSpotModel> findById(UUID id) {
-        Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotRepository.findById(id);
-        if (parkingSpotModelOptional.isEmpty()) {
-            throw new ValidationException("Parking Spot not found");
-        }
-        return parkingSpotModelOptional;
+        return parkingSpotRepository.findById(id);
     }
 
     @Transactional //foi anotado aqui pois é um metodo destrutivo caso der algo errado eu tenho um rollback
