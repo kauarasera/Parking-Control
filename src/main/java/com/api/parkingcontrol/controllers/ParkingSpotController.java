@@ -1,5 +1,6 @@
 package com.api.parkingcontrol.controllers;
 
+import com.api.parkingcontrol.configs.ValidationException;
 import com.api.parkingcontrol.dtos.ParkingSpotDto;
 import com.api.parkingcontrol.models.ParkingSpotModel;
 import com.api.parkingcontrol.services.ParkingSpotService;
@@ -21,9 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,45 +42,24 @@ public class ParkingSpotController {
 
     @PostMapping
     public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDto parkingSpotDto) {
-        //Depois poderá ser essas responsabilidades isolado essas reponsabilidades em um custom validate
-        if (parkingSpotService.existsByLicensePlateCar(parkingSpotDto.getLicensePlateCar())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict: License Plate Car is already in use!");
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.createParkingSpot(parkingSpotDto));
+        } catch (ValidationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
-        if (parkingSpotService.existsByParkingSpotNumber(parkingSpotDto.getParkingSpotNumber())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict: Parking Spot is already in use!");
-        }
-        if (parkingSpotService.existsByRoomAndFloor(parkingSpotDto.getRoom(), parkingSpotDto.getFloor())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict: Parking Spot already registered for this room/floor!");
-        }
-
-        var parkingSpotModel = new ParkingSpotModel();
-
-        BeanUtils.copyProperties(parkingSpotDto, parkingSpotModel); //convertando DTO para Model
-        parkingSpotModel.setReservationDate(LocalDateTime.now(ZoneId.of("UTC"))); //setando data de registro salvando em UTC
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.save(parkingSpotModel));
     }
 
     @GetMapping
     public ResponseEntity<Page<ParkingSpotModel>> getAllParkingSpots(@PageableDefault(page = 0, size = 10, sort = "id",
             direction = Sort.Direction.ASC) Pageable pageable) {
-        Page<ParkingSpotModel> parkingSpotModelList =  parkingSpotService.findAll(pageable);
-        if (!parkingSpotModelList.isEmpty()) {
-            for (ParkingSpotModel spot : parkingSpotModelList) {
-                UUID id = spot.getId();
-                spot.add(linkTo(methodOn(ParkingSpotController.class).getOneParkingSpot(id)).withSelfRel());
-            }
-        }
-
+        Page<ParkingSpotModel> parkingSpotModelList = parkingSpotService.findAll(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(parkingSpotModelList);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getOneParkingSpot(@PathVariable(value = "id") UUID id) {
         Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotService.findById(id);
-        if (parkingSpotModelOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking Spot not found");
-        }
+
         return ResponseEntity.status(HttpStatus.OK).body(parkingSpotModelOptional.get());
     }
 
@@ -109,6 +86,12 @@ public class ParkingSpotController {
         parkingSpotModel.setReservationDate(parkingSpotModelOptional.get().getReservationDate());
 
         return ResponseEntity.status(HttpStatus.OK).body(parkingSpotService.save(parkingSpotModel));
+    }
+
+    public void addHateoasLinks(ParkingSpotModel parkingSpotModel) {
+        UUID id = parkingSpotModel.getId();
+        parkingSpotModel.add(linkTo(methodOn(ParkingSpotController.class).getOneParkingSpot(id)).withSelfRel());
+        // Adicione outros links conforme necessário
     }
 }
 /*
