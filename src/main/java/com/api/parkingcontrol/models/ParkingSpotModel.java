@@ -1,6 +1,12 @@
 package com.api.parkingcontrol.models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.springframework.hateoas.RepresentationModel;;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -9,7 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "TB_PARKING_SPOT")
-public class ParkingSpotModel implements Serializable { //conversões de objetos java para bytes para ser salvo no BD
+public class ParkingSpotModel extends RepresentationModel<ParkingSpotModel> implements Serializable { //conversões de objetos java para bytes para ser salvo no BD
     @Serial
     private static final long serialVersionUID = 1L; //controle das conversões feitas pela JVM
 
@@ -20,11 +26,11 @@ public class ParkingSpotModel implements Serializable { //conversões de objetos
     private String parkingSpotNumber;
     @Column(nullable = false, unique = true, length = 7)
     private String licensePlateCar;
-    @Column(nullable = false, unique = true, length = 70)
+    @Column(nullable = false, unique = false, length = 70)
     private String brandCar;
-    @Column(nullable = false, unique = true, length = 70)
+    @Column(nullable = false, unique = false, length = 70)
     private String modelCar;
-    @Column(nullable = false, unique = true, length = 70)
+    @Column(nullable = false, unique = false, length = 70)
     private String colorCar;
     @Column(nullable = false)
     private LocalDateTime reservationDate;
