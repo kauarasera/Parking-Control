@@ -1,21 +1,18 @@
 package com.api.parkingcontrol.services;
 
-import com.api.parkingcontrol.configs.ValidationException;
 import com.api.parkingcontrol.controllers.ParkingSpotController;
 import com.api.parkingcontrol.dtos.ParkingSpotDto;
 import com.api.parkingcontrol.models.ParkingSpotModel;
 import com.api.parkingcontrol.repositories.ParkingSpotRepository;
+import com.api.parkingcontrol.services.exceptions.ValidationException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -75,13 +72,9 @@ public class ParkingSpotService {
         return parkingSpotModelList;
     }
 
-    public Optional<ParkingSpotModel> findById(UUID id) {
-        Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotRepository.findById(id);
-
-        if (parkingSpotModelOptional.isPresent()) {
-            addHateoasLinks(parkingSpotModelOptional.get());
-        }
-        return parkingSpotModelOptional;
+    public ParkingSpotModel findById(UUID id) {
+       return parkingSpotRepository.findById(id).orElseThrow(
+                () -> new ValidationException("Conflict: Parking Spot not found"));
     }
 
     @Transactional //foi anotado aqui pois é um metodo destrutivo caso der algo errado eu tenho um rollback
