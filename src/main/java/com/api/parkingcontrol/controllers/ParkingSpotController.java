@@ -42,11 +42,7 @@ public class ParkingSpotController {
 
     @PostMapping
     public ResponseEntity<Object> saveParkingSpot(@RequestBody @Valid ParkingSpotDto parkingSpotDto) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.createParkingSpot(parkingSpotDto));
-        } catch (ValidationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.createParkingSpot(parkingSpotDto));
     }
 
     @GetMapping
@@ -86,12 +82,6 @@ public class ParkingSpotController {
         parkingSpotModel.setReservationDate(parkingSpotModelOptional.get().getReservationDate());
 
         return ResponseEntity.status(HttpStatus.OK).body(parkingSpotService.save(parkingSpotModel));
-    }
-
-    public void addHateoasLinks(ParkingSpotModel parkingSpotModel) {
-        UUID id = parkingSpotModel.getId();
-        parkingSpotModel.add(linkTo(methodOn(ParkingSpotController.class).getOneParkingSpot(id)).withSelfRel());
-        // Adicione outros links conforme necessário
     }
 }
 /*

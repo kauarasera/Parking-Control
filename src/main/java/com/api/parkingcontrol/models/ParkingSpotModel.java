@@ -26,11 +26,11 @@ public class ParkingSpotModel extends RepresentationModel<ParkingSpotModel> impl
     private String parkingSpotNumber;
     @Column(nullable = false, unique = true, length = 7)
     private String licensePlateCar;
-    @Column(nullable = false, unique = true, length = 70)
+    @Column(nullable = false, unique = false, length = 70)
     private String brandCar;
-    @Column(nullable = false, unique = true, length = 70)
+    @Column(nullable = false, unique = false, length = 70)
     private String modelCar;
-    @Column(nullable = false, unique = true, length = 70)
+    @Column(nullable = false, unique = false, length = 70)
     private String colorCar;
     @Column(nullable = false)
     private LocalDateTime reservationDate;

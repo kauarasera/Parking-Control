@@ -77,6 +77,7 @@ public class ParkingSpotService {
 
     public Optional<ParkingSpotModel> findById(UUID id) {
         Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotRepository.findById(id);
+
         if (parkingSpotModelOptional.isPresent()) {
             addHateoasLinks(parkingSpotModelOptional.get());
         }
