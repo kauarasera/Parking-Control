@@ -50,9 +50,6 @@ public class ParkingSpotController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteParkingSpot(@PathVariable(value = "id") UUID id) {
         Optional<ParkingSpotModel> parkingSpotModelOptional = Optional.ofNullable(parkingSpotService.findById(id));
-        if (parkingSpotModelOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking Spot not found");
-        }
         parkingSpotService.delete(parkingSpotModelOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body("parking Spot deleted sucessfully");
     }
